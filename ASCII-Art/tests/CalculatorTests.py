@@ -2,7 +2,7 @@ import unittest
 
 import calculator
 
-
+# название заканчивается на Test, нейминг
 class TestCalculator(unittest.TestCase):
     def test1(self):
         art_width, art_height = calculator.calc_art_size(3, (2, 4))

@@ -1,6 +1,11 @@
 import math
 
 
+# TODO: организовать в пакет
+# TODO: pylint , coverage > 80%
+
+
+
 def calc_cuts(str_length, width):
     '''
     Вычисляет сечения по длине пикселей.
@@ -11,9 +16,9 @@ def calc_cuts(str_length, width):
         frac: процент от длины пискеля, где именно проходит сечение
     '''
     cuts = []
-    for c in range(0, str_length + 1):  # c - номер сечения
-        perfect_cut = (c / str_length) * width  # float - точка на [0; w], через которую проходит сечение секции
-        pixel_number = math.floor(perfect_cut)  # номер пикселя, через начальную точку или тело кот. проходит сечение
+    for c in range(0, str_length + 1):
+        perfect_cut = (c / str_length) * width
+        pixel_number = math.floor(perfect_cut)
         frac_part = perfect_cut - math.trunc(perfect_cut)
         cuts.append((pixel_number, frac_part))
     return cuts
@@ -38,7 +43,7 @@ def calc_art_size(str_length, img_size):
 template = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 
 
-def rgb_to_brightness(r, g, b):  # в шкале [0;1]
+def rgb_to_brightness(r, g, b):
     '''
     Вычисляет яркость полного пикселя на шкале [0;1]
     :param r: int - яркость красного
@@ -63,7 +68,7 @@ def brightness_to_ascii(brightness, inverted=False):
 
 def pixel_is_inside(pixel_coord, row, column):
     '''
-    Определяет, затрагивает ли кусочек, заданный строкой и строкой, данный пиксель.
+    Определяет, затрагивает ли кусочек, заданный строкой и столбцом, данный пиксель.
     :param pixel_coord: (int, int) - координаты пикселя
     :param row: выделенная строка с гориз. сечениями = (top, bottom); top, bottom в формате (pix_num, frac_part)
     :param column: выделенный столбец с верт. сечениями = (left, right); left, right в формате (pix_num, frac_part)
@@ -139,4 +144,6 @@ def calc_pixel_brightness(row, column, rgb_img, pixel_coord):  # в шкале 0
     :param pixel_coord: (int, int) - координаты пикселя
     :return:
     '''
-    return rgb_to_brightness(*rgb_img.getpixel(*pixel_coord)) * calc_pixel_surface(row, column, pixel_coord)
+    return (rgb_to_brightness(*rgb_img.getpixel(*pixel_coord)) *
+            calc_pixel_surface(row, column, pixel_coord))
+
