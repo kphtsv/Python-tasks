@@ -1,5 +1,4 @@
 import unittest
-
 import calculator
 
 # название заканчивается на Test, нейминг
