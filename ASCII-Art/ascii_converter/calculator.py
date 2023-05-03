@@ -38,7 +38,7 @@ def calc_art_size(str_length, img_size):
     return art_width, art_height
 
 
-template = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+template = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B$@"
 
 
 def rgb_to_brightness(r, g, b):

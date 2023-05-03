@@ -1,12 +1,12 @@
 from PIL import Image
-import calculator
+from ascii_converter import calculator
 
 
-def flatten_slice(row, column, rgb_img):  # возвр. яркость куска
+def flatten_slice(row, column, rgb_img):
     """
     Вычисляет среднюю яркость куска на пересечении строки и столбца.
-    :param row: выделенная строка с гориз. сечениями = (top, bottom); top, bottom в формате (pix_num, frac_part)
-    :param column: выделенный столбец с верт. сечениями = (left, right); left, right в формате (pix_num, frac_part)
+    :param row: выделенная строка с гор. сечениями = (top, bottom); top, bottom в формате (pix_num, frac_part)
+    :param column: выделенный столбец с вер. сечениями = (left, right); left, right в формате (pix_num, frac_part)
     :param rgb_img: изображение, конвертированное в RGB-сетку
     :return: средняя яркость заданного куска, из [0;1].
     """
@@ -28,10 +28,9 @@ def flatten_slice(row, column, rgb_img):  # возвр. яркость куск�
     return brightness_sum / surface_sum
 
 
-# тайпинг во вводе
 def process(filename_in, str_length, inverted):
     """
-    Возваращет ASCII-арт изображения в виде строки.
+    Возвращает ASCII-арт изображения в виде строки.
     :param filename_in: str, полный путь файла ввода
     :param str_length: int, ширина ASCII-арта в кол-ве символов
     :param inverted: bool, инверсия изображения по яркости

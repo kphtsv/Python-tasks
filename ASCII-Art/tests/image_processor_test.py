@@ -1,6 +1,6 @@
 import unittest
 from PIL import Image
-import image_processor
+from ascii_converter import image_processor
 
 
 class ImageProcessorTest(unittest.TestCase):

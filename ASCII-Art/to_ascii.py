@@ -1,15 +1,13 @@
 import re
-import image_processor
+from ascii_converter import image_processor
 from sys import argv
 
-with open('help.txt', 'r',encoding='utf-8') as help_file:
+with open('help.txt', 'r', encoding='utf-8') as help_file:
     help_response = help_file.read()
 
-# FILE_REQUEST = re.compile(r'^-translate (?P<length>[0-9]+?) (?P<input_name>.+?) -f (?P<output_name>.+)$')
-# CLI_REQUEST = re.compile(r'^-translate (?P<length>[0-9]+?) (?P<input_name>.+?)$')
-
 INPUT_PATTERN = re.compile(r'^-(?P<output_type>[it]) (?P<length>[0-9]+) (?P<input_dir>.+?) (?P<output_dir>.+)$')
-
+FILE_EXT_PATTERN = re.compile(r'.*\.(?P<ext>.*)$')
+MAX_LENGTH = 300
 
 ANSWER_CODE_ANNOTATION = {
     0: 'Некорректный ввод. Для вывода справки запустите скрипт с параметром -h или --help.',
@@ -37,6 +35,14 @@ def arg_parse():
             return 0, None
 
 
+def get_extension(directory):
+    match = FILE_EXT_PATTERN.search(directory)
+    if not match:
+        return None
+    else:
+        return match.group('ext')
+
+
 def run():
     """
     Запускает приложение из консоли, обрабатывает введённые значения.
@@ -53,14 +59,26 @@ def run():
         input_dir = match.group('input_dir')
         output_dir = match.group('output_dir')
 
-        art = image_processor.process(input_dir, art_len, False)
+        if art_len < 1 or MAX_LENGTH < art_len:
+            print('Length value is either too short or too long. Try again.')
+            exit(0)
 
-        if output_type == 't':
-            with open(output_dir, "w") as out_file:
-                out_file.write(art)
+        file_ext = get_extension(input_dir)
+        if file_ext == 'jpg' or file_ext == 'png':
+            art = image_processor.process(input_dir, art_len, False)
+
+            if output_type == 't':
+                with open(output_dir, "w") as out_file:
+                    out_file.write(art)
+            else:
+                pass  # TODO: текст в картинку!
         else:
-            pass  # TODO: текст в картинку!
+            print('Unsupported input file extension. Try again with .png or .jpg image.')
+            exit(0)
 
 
 if __name__ == '__main__':
-    run()
+    try:
+        run()
+    except KeyboardInterrupt:  # не работает?
+        print('Shutting down.')
