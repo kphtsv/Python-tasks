@@ -1,12 +1,14 @@
 import re
+
+import test_file
 from ascii_converter import image_processor
+from ascii_converter import file_processor
 from sys import argv
 
 with open('help.txt', 'r', encoding='utf-8') as help_file:
     help_response = help_file.read()
 
 INPUT_PATTERN = re.compile(r'^-(?P<output_type>[it]) (?P<length>[0-9]+) (?P<input_dir>.+?) (?P<output_dir>.+)$')
-FILE_EXT_PATTERN = re.compile(r'.*\.(?P<ext>.*)$')
 MAX_LENGTH = 300
 
 ANSWER_CODE_ANNOTATION = {
@@ -35,14 +37,6 @@ def arg_parse():
             return 0, None
 
 
-def get_extension(directory):
-    match = FILE_EXT_PATTERN.search(directory)
-    if not match:
-        return None
-    else:
-        return match.group('ext')
-
-
 def run():
     """
     Запускает приложение из консоли, обрабатывает введённые значения.
@@ -60,25 +54,24 @@ def run():
         output_dir = match.group('output_dir')
 
         if art_len < 1 or MAX_LENGTH < art_len:
-            print('Length value is either too short or too long. Try again.')
-            exit(0)
+            raise Exception('Length value is either too short or too long. Try again.')
 
-        file_ext = get_extension(input_dir)
+        file_ext = file_processor.get_extension(input_dir)
         if file_ext == 'jpg' or file_ext == 'png':
             art = image_processor.process(input_dir, art_len, False)
-
             if output_type == 't':
-                with open(output_dir, "w") as out_file:
-                    out_file.write(art)
+                file_processor.write_txt(art, output_dir)
             else:
+                file_processor.write_png(art, output_dir)
                 pass  # TODO: текст в картинку!
         else:
-            print('Unsupported input file extension. Try again with .png or .jpg image.')
-            exit(0)
+            raise Exception('Unsupported input file extension. Try again with .png or .jpg image.')
 
 
 if __name__ == '__main__':
-    try:
-        run()
-    except KeyboardInterrupt:  # не работает?
-        print('Shutting down.')
+    # try:
+    #     run()
+    # except KeyboardInterrupt:  # не работает?
+    #     print('Shutting down.')
+
+    test_file.run()
