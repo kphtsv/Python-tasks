@@ -1,5 +1,4 @@
 import re
-
 from PIL import Image, ImageDraw, ImageFont
 from moviepy.editor import *
 
@@ -7,6 +6,8 @@ from moviepy.editor import *
 from datetime import timedelta
 import numpy as np
 import os
+import cv2
+
 
 import ascii_converter.image_processor
 
@@ -132,5 +133,6 @@ def frame_sequence_to_video(frames_folder: str):
 def video_to_ascii(video_filename: str, art_length: int):
     frames_dir = save_video_frames(video_filename)
     location = frame_sequence_to_video(frames_dir)
+
 
     print(f'Video is located at: {location}')

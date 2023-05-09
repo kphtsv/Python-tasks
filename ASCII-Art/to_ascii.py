@@ -1,6 +1,4 @@
 import re
-
-import test_file
 from ascii_converter import image_processor
 from ascii_converter import file_processor
 from sys import argv
