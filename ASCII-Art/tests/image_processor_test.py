@@ -10,7 +10,7 @@ class ImageProcessorTest(unittest.TestCase):
         column = ((1, 0), (1, 0.5))
 
         supposed_brightness = 0.25 + 0.5 * 0.5 + 0.25 * 0.6
-        self.assertAlmostEqual(supposed_brightness, image_processor.flatten_slice(row, column, rgb_img), delta=1e-2)
+        self.assertAlmostEqual(supposed_brightness, image_processor.flatten_slice_brightness(row, column, rgb_img), delta=1e-2)
 
     def test_process(self):
         filename_in = '../images/small_image_bw.png'

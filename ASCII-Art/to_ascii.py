@@ -62,16 +62,16 @@ def run():
             if output_type == 't':
                 file_processor.write_txt(art, output_dir)
             else:
-                file_processor.write_png(art, output_dir)
-                pass  # TODO: текст в картинку!
+                image = file_processor.write_art_to_image(art)
+                file_processor.save_image(image, output_dir)
         else:
             raise Exception('Unsupported input file extension. Try again with .png or .jpg image.')
 
 
 if __name__ == '__main__':
-    # try:
-    #     run()
-    # except KeyboardInterrupt:  # не работает?
-    #     print('Shutting down.')
+    try:
+        run()
+    except KeyboardInterrupt:  # не работает?
+        print('Shutting down.')
 
-    test_file.run()
+    # test_file.run()

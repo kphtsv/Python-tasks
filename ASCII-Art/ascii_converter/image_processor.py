@@ -2,7 +2,7 @@ from PIL import Image
 from ascii_converter import calculator
 
 
-def flatten_slice(row, column, rgb_img):
+def flatten_slice_brightness(row, column, rgb_img):
     """
     Вычисляет среднюю яркость куска на пересечении строки и столбца.
     :param row: выделенная строка с гор. сечениями = (top, bottom); top, bottom в формате (pix_num, frac_part)
@@ -10,6 +10,25 @@ def flatten_slice(row, column, rgb_img):
     :param rgb_img: изображение, конвертированное в RGB-сетку
     :return: средняя яркость заданного куска, из [0;1].
     """
+    left, right = column  # left, bottom, top, left грани в формате (pix_number, fraction)
+    top, bottom = row
+    width, height = rgb_img.size
+
+    brightness_sum = 0
+    surface_sum = 0
+    for hp in range(left[0], right[0] + 1):
+        if hp >= width:
+            continue
+        for vp in range(top[0], bottom[0] + 1):
+            if vp >= height:
+                continue
+            surface = calculator.calc_pixel_surface(row, column, (hp, vp))
+            surface_sum += surface
+            brightness_sum += calculator.rgb_to_brightness(*(rgb_img.getpixel((hp, vp)))) * surface
+    return brightness_sum / surface_sum
+
+
+def flatten_slice_color(row, column, rgb_img):
     left, right = column  # left, bottom, top, left грани в формате (pix_number, fraction)
     top, bottom = row
     width, height = rgb_img.size
@@ -53,7 +72,7 @@ def process(filename_in, str_length, inverted):
         for iv in range(1, len(vertical_cuts)):
             row = (prev_hc, horizontal_cuts[ih])
             column = (prev_vc, vertical_cuts[iv])
-            slice_brightness = flatten_slice(row, column, rgb_img)
+            slice_brightness = flatten_slice_brightness(row, column, rgb_img)
             char = calculator.brightness_to_ascii(slice_brightness, inverted)
             result_char_list.append(char * 1)  # stretching factor
             prev_vc = vertical_cuts[iv]
