@@ -4,6 +4,9 @@ import os
 import cv2
 import ascii_converter.image_processor
 
+with open('ansi_chars.txt', 'r') as file:
+    ANSI_CHARACTERS = ['░', '▒', '▓', '█']
+
 
 def write_txt(art: str, output_directory: str):
     filename, ext = os.path.splitext(output_directory)
@@ -14,7 +17,7 @@ def write_txt(art: str, output_directory: str):
         out_file.write(art)
 
 
-def get_image_size(art: str, font):
+def get_image_size_by_str(art: str, font):
     width = art.find('\n')
     height = int((len(art)) / (width + 1))
     char_w, char_h = font.getsize('W')
@@ -23,7 +26,7 @@ def get_image_size(art: str, font):
 
 def write_art_to_image(art: str):
     font = ImageFont.load_default()
-    image = Image.new('RGB', get_image_size(art, font), color='#FFFFFF')
+    image = Image.new('RGB', get_image_size_by_str(art, font), color='#FFFFFF')
 
     lines = art.split('\n')
     draw_text = ImageDraw.Draw(image)
@@ -39,9 +42,44 @@ def write_art_to_image(art: str):
     return image
 
 
+# def byte_format(b):  # 0 <= b <= 255
+#     b = hex(b)[hex(b).find('x') + 1:]
+#     if len(b) < 2:
+#         b = '0' + b
+#     return b
+
+
+def get_image_size_by_matrix(rgb_matrix, font):
+    height = len(rgb_matrix)
+    width = len(rgb_matrix[0])
+    #font.getsize('█')
+    char_w, char_h = (16, 29)
+    return width * char_w, height * char_h
+
+
+def write_color_art_to_image(rgb_matrix):
+    font = ImageFont.truetype("C:\WINDOWS\Fonts\Arial.ttf", 25, encoding="utf-8")
+
+    image = Image.new('RGB', get_image_size_by_matrix(rgb_matrix, font), color='#FFFFFF')
+    draw_text = ImageDraw.Draw(image)
+    char_w, char_h = (16,29)
+    for i in range(len(rgb_matrix)):
+        row = rgb_matrix[i]
+        for j in range(len(row)):
+            r, g, b = rgb_matrix[i][j]
+
+            draw_text.text(
+                (j * char_w, i * char_h),
+                '█',
+                font=font,
+                fill=(r, g, b, 255)  # возможно, здесь BGRA
+            )
+    return image
+
+
 def save_image(image: Image, output_directory: str):
     _, ext = os.path.splitext(output_directory)
-    image.save(output_directory, format=ext)
+    image.save(output_directory, format=ext[1:])
 
 
 SAVING_FRAMES_PER_SECOND = 20
@@ -86,7 +124,7 @@ def frames_to_ascii_frames(frames: iter, art_width: int):
     for frame_cv in frames:
         i += 1
         frame_pil = Image.fromarray(cv2.cvtColor(frame_cv, cv2.COLOR_BGR2RGB))  # cv2 -> PIL.Image
-        frame_art = ascii_converter.image_processor.image_to_art(frame_pil, art_width)
+        frame_art = ascii_converter.image_processor.image_to_ascii_art(frame_pil, art_width)
         ascii_frame = pil_to_cv_image(write_art_to_image(frame_art))
         ascii_frames.append(ascii_frame)
 

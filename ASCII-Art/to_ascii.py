@@ -1,3 +1,4 @@
+import os
 import re
 from ascii_converter import image_processor
 from ascii_converter import file_processor
@@ -54,9 +55,9 @@ def run():
         if art_len < 1 or MAX_LENGTH < art_len:
             raise Exception('Length value is either too short or too long. Try again.')
 
-        file_ext = file_processor.get_extension(input_dir)
-        if file_ext == 'jpg' or file_ext == 'png':
-            art = image_processor.process(input_dir, art_len, False)
+        _, file_ext = os.path.splitext(input_dir)
+        if file_ext == '.jpg' or file_ext == '.png':
+            art = image_processor.to_ascii_art_from_file(input_dir, art_len, False)
             if output_type == 't':
                 file_processor.write_txt(art, output_dir)
             else:

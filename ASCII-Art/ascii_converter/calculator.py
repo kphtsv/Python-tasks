@@ -41,15 +41,44 @@ def calc_art_size(str_length, img_size):
 template = " `^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 
 
-def rgb_to_brightness(r, g, b):
+def rgb_to_brightness(r, g, b, grayscale=True):
     """
     Вычисляет яркость полного пикселя на шкале [0;1]
     :param r: int - яркость красного
     :param g: int - яркость зеленого
     :param b: int - яркость синего
+    :param grayscale: float - монохромен ли контекст запроса
     :return: float - яркость пикселя
     """
-    return (r + g + b) / (255 * 3)
+    if grayscale:
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+    else:
+        return (0.267 * r + 0.642 * g + 0.091 * b) / 255
+
+
+def rgb_to_ansi(r, g, b):
+    """
+    Конвертирует r, g, b значения в ANSI-цвет.
+    :param r: int - яркость красного
+    :param g: int - яркость зеленого
+    :param b: int - яркость синего
+    :return: int - номер ANSI-цвета
+    """
+    if r == g & g == b:
+        if r < 8:
+            return int(16)
+        if r > 248:
+            return int(230)
+        return int(round(((r - 8) / 247) * 24) + 232)
+
+    def to_ansi_range(a):
+        return int(round(a / 51.0))
+
+    r_in_range = to_ansi_range(r)
+    g_in_range = to_ansi_range(g)
+    b_in_range = to_ansi_range(b)
+    ansi = 16 + (36 * r_in_range) + (6 * g_in_range) + b_in_range
+    return int(ansi)
 
 
 # inverted = True => белый по черному, False => черный по белому
@@ -145,3 +174,14 @@ def calc_pixel_brightness(row, column, rgb_img, pixel_coord):  # в шкале 0
     return (rgb_to_brightness(*rgb_img.getpixel(pixel_coord)) *
             calc_pixel_surface(row, column, pixel_coord))
 
+
+def calc_picture_slices(img_size, str_length: int):
+    """
+    Высчитывает горизонтальные и вертикальные сечения, по которым надо разбить картинку для конвертации в ASCII-Art.
+    :param img_size: (int, int) - размер конвертируемого изображения
+    :param str_length: int - ширина ASCII-арта
+    """
+    width, height = img_size
+    art_width, art_height = calc_art_size(str_length, (width, height))
+    vertical_cuts, horizontal_cuts = calc_cuts(art_width, width), calc_cuts(art_height, height)
+    return vertical_cuts, horizontal_cuts

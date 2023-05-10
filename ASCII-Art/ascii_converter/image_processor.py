@@ -33,24 +33,31 @@ def flatten_slice_color(row, column, rgb_img):
     top, bottom = row
     width, height = rgb_img.size
 
-    brightness_sum = 0
+    r_s, g_s, b_s = 0, 0, 0
     surface_sum = 0
+
     for hp in range(left[0], right[0] + 1):
         if hp >= width:
             continue
         for vp in range(top[0], bottom[0] + 1):
             if vp >= height:
                 continue
+
             surface = calculator.calc_pixel_surface(row, column, (hp, vp))
             surface_sum += surface
-            brightness_sum += calculator.rgb_to_brightness(*(rgb_img.getpixel((hp, vp)))) * surface
-    return brightness_sum / surface_sum
+
+            r, g, b = rgb_img.getpixel((hp, vp))
+            r_s += r * surface
+            g_s += g * surface
+            b_s += b * surface
+
+    return round(r_s / surface_sum), round(g_s / surface_sum), round(b_s / surface_sum)
 
 
-def image_to_art(img: Image, str_length, inverted=False):
+def image_to_ascii_art(img: Image, str_length, inverted=False):
     """
     Возвращает ASCII-арт изображения в виде строки.
-    :param filename_in: str, полный путь файла ввода
+    :param img: Image, изображение формата PIL для конвертации
     :param str_length: int, ширина ASCII-арта в кол-ве символов
     :param inverted: bool, инверсия изображения по яркости
     :return: str, ASCII-арт
@@ -60,10 +67,7 @@ def image_to_art(img: Image, str_length, inverted=False):
 
     # img = Image.open(filename_in)
     rgb_img = img.convert('RGB')
-    width, height = img.size
-
-    art_width, art_height = calculator.calc_art_size(str_length, (width, height))
-    vertical_cuts, horizontal_cuts = calculator.calc_cuts(art_width, width), calculator.calc_cuts(art_height, height)
+    vertical_cuts, horizontal_cuts = calculator.calc_picture_slices(img.size, str_length)
 
     result_char_list = []
     prev_hc = horizontal_cuts[0]
@@ -82,6 +86,35 @@ def image_to_art(img: Image, str_length, inverted=False):
     return ''.join(result_char_list)
 
 
-def process(filename_in, str_length, inverted):
+def to_ascii_art_from_file(filename_in, str_length, inverted=False):
     img = Image.open(filename_in)
-    return image_to_art(img, str_length, inverted)
+    return image_to_ascii_art(img, str_length, inverted)
+
+
+def image_to_ansi_art(img: Image, str_length):
+    if str_length < 1:
+        raise Exception("Incorrect string length input!")
+
+    rgb_img = img.convert('RGB')
+    vertical_cuts, horizontal_cuts = calculator.calc_picture_slices(img.size, str_length)
+
+    rgb_matrix = []
+    prev_hc = horizontal_cuts[0]
+    for ih in range(1, len(horizontal_cuts)):
+        prev_vc = vertical_cuts[0]
+        rgb_row = []
+        for iv in range(1, len(vertical_cuts)):
+            row = (prev_hc, horizontal_cuts[ih])
+            column = (prev_vc, vertical_cuts[iv])
+            slice_color = flatten_slice_color(row, column, rgb_img)
+            rgb_row.append(slice_color)
+            prev_vc = vertical_cuts[iv]
+        rgb_matrix.append(rgb_row)
+        prev_hc = horizontal_cuts[ih]
+
+    return rgb_matrix
+
+
+def to_ansi_art_from_file(filename_in: str, str_length: int):
+    img = Image.open(filename_in)
+    return image_to_ansi_art(img, str_length)
