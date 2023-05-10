@@ -47,7 +47,7 @@ def flatten_slice_color(row, column, rgb_img):
     return brightness_sum / surface_sum
 
 
-def process(filename_in, str_length, inverted):
+def image_to_art(img: Image, str_length, inverted=False):
     """
     Возвращает ASCII-арт изображения в виде строки.
     :param filename_in: str, полный путь файла ввода
@@ -58,7 +58,7 @@ def process(filename_in, str_length, inverted):
     if str_length < 1:
         raise Exception("Incorrect string length input!")
 
-    img = Image.open(filename_in)
+    # img = Image.open(filename_in)
     rgb_img = img.convert('RGB')
     width, height = img.size
 
@@ -80,3 +80,8 @@ def process(filename_in, str_length, inverted):
         prev_hc = horizontal_cuts[ih]
 
     return ''.join(result_char_list)
+
+
+def process(filename_in, str_length, inverted):
+    img = Image.open(filename_in)
+    return image_to_art(img, str_length, inverted)

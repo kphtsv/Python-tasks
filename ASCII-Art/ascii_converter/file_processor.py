@@ -1,30 +1,13 @@
-import re
+import numpy
 from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import *
-
-# для обработки видео
-from datetime import timedelta
-import numpy as np
 import os
 import cv2
-
-
 import ascii_converter.image_processor
-
-FILE_EXT_PATTERN = re.compile(r'.*\.(?P<ext>.*)$')
-
-
-# TODO os.path.splitext(dir)
-def get_extension(directory):
-    match = FILE_EXT_PATTERN.search(directory)
-    if match:
-        return match.group('ext')
-    else:
-        return None
 
 
 def write_txt(art: str, output_directory: str):
-    if get_extension(output_directory) != 'txt':
+    filename, ext = os.path.splitext(output_directory)
+    if ext != 'txt':
         raise Exception('Output filename has invalid extension. Should be \'.txt\'.')
 
     with open(output_directory, 'w', encoding='utf-8') as out_file:
@@ -57,82 +40,81 @@ def write_art_to_image(art: str):
 
 
 def save_image(image: Image, output_directory: str):
-    ext = get_extension(output_directory)
+    _, ext = os.path.splitext(output_directory)
     image.save(output_directory, format=ext)
 
 
-SAVING_FRAMES_PER_SECOND = 10
+SAVING_FRAMES_PER_SECOND = 20
 
 
-def format_timedelta(td):  # td == timedelta
-    result = str(td)
-    try:
-        result, ms = result.split('.')
-    except ValueError:
-        return result + '.00'.replace(':', '-')
-
-    ms = round(int(ms) / 10000)
-    return f'{result}.{ms:02}'.replace(':', '-')
+def cv_to_pil_image(image):
+    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
 
-def save_video_frames(video_filename: str):
-    video_clip = VideoFileClip(video_filename)
-    filename, _ = os.path.splitext(video_filename)
+def pil_to_cv_image(image: Image):
+    open_cv_image = numpy.array(image)
+    open_cv_image = open_cv_image[:, :, ::-1].copy()  # Convert RGB to BGR
+    return open_cv_image
 
-    if not os.path.isdir(filename):
-        os.mkdir(filename)
 
-    saving_frames_per_second = min(video_clip.fps, SAVING_FRAMES_PER_SECOND)
-    step = 1 / video_clip.fps if saving_frames_per_second == 0 else 1 / saving_frames_per_second
+def video_to_frames(video_full_filename: str):
+    capture = cv2.VideoCapture(video_full_filename)
+    fps = capture.get(cv2.CAP_PROP_FPS)
+    saving_fps = min(fps, SAVING_FRAMES_PER_SECOND)
+    frame_len = fps / saving_fps
 
-    for current_duration in np.arange(0, video_clip.duration, step):
-        frame_duration_formatted = format_timedelta(timedelta(seconds=current_duration)).replace(':', '-')
-        frame_filename = os.path.join(filename, f'frame-{frame_duration_formatted}.jpg')
-        video_clip.save_frame(frame_filename, current_duration)
+    frames = []
+    i = 0
+    file_count = 0
+
+    while capture.isOpened():
+        is_read, frame = capture.read()
+        i += 1
+        if is_read:
+            if i >= frame_len * file_count:
+                frames.append(frame)
+                file_count += 1
+        else:
+            break
+    capture.release()
+    return frames
+
+
+def frames_to_ascii_frames(frames: iter, art_width: int):
+    ascii_frames = []
+    i = 0
+    for frame_cv in frames:
+        i += 1
+        frame_pil = Image.fromarray(cv2.cvtColor(frame_cv, cv2.COLOR_BGR2RGB))  # cv2 -> PIL.Image
+        frame_art = ascii_converter.image_processor.image_to_art(frame_pil, art_width)
+        ascii_frame = pil_to_cv_image(write_art_to_image(frame_art))
+        ascii_frames.append(ascii_frame)
+
+    return ascii_frames
+
+
+def frames_to_video(frames: iter, out_filename):
+    if len(frames) == 0:
+        raise Exception('Nothing to convert!')
+
+    height, width, _ = frames[0].shape
+    frame_size = width, height
+    filename = f'videos\\{out_filename}_processed.avi'
+    video = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc("X", "V", "I", "D"), SAVING_FRAMES_PER_SECOND, frame_size)
+
+    for frame in frames:
+        video.write(frame)
+
+    video.release()
+    cv2.destroyAllWindows()
+
     return filename
 
 
-def video_to_ascii_frames(video_filename: str, art_length: int):
-    frames_folder = save_video_frames(video_filename)
-    frame_list = [os.path.join(frames_folder, name) for name in os.listdir(frames_folder)]  # 'videos\bad_apple\frame-_.jpg'
+def video_to_ascii(full_video_filename: str, art_width: int):
+    frames = video_to_frames(full_video_filename)
+    ascii_frames = frames_to_ascii_frames(frames, art_width)
+    name = os.path.splitext(os.path.basename(full_video_filename))[0]
+    saved_dir = frames_to_video(ascii_frames, name)
 
-    processed_frames_folder = os.path.join(frames_folder + '_processed')
-    if not os.path.isdir(processed_frames_folder):
-        os.mkdir(processed_frames_folder)
-
-    for frame_dir in frame_list:
-        frame_name, ext = os.path.splitext(os.path.basename(frame_dir))
-        art = ascii_converter.image_processor.process(frame_dir, art_length, False)
-        output_directory = os.path.join(processed_frames_folder, frame_name + '.png')
-
-        img = write_art_to_image(art)
-        save_image(img, output_directory)
-
-
-# def get_video_frames(video_filename: str):
-#     video_clip = VideoFileClip(video_filename)
-#     frames = [Image.fromarray(video_clip.get_frame(1))]
-#     return frames
-
-
-def frame_sequence_to_video(frames_folder: str):
-    frame_duration = 1 / 10  # 10 кадров в секунду
-    frame_list = [os.path.join(frames_folder, name) for name in os.listdir(frames_folder)]  # 'videos\bad_apple\frame-_.jpg'
-    output_name = os.path.join(frames_folder, 'video.mp4')  # пишет в папку с фреймами
-
-    clip = ImageSequenceClip(frame_list, fps=10)
-    clip.write_videofile(output_name)
-
-    return output_name
-
-
-# https://ru.stackoverflow.com/questions/1446982/python-сгенерировать-5-ти-секундное-mp4-видео-из-одного-фото
-# быстрое решение, но с cv2.
-
-# медленное, но рабочее решение
-def video_to_ascii(video_filename: str, art_length: int):
-    frames_dir = save_video_frames(video_filename)
-    location = frame_sequence_to_video(frames_dir)
-
-
-    print(f'Video is located at: {location}')
+    return saved_dir
