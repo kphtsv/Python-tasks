@@ -9,6 +9,6 @@
 Пример команды: `python to_ascii.py -t 150 images/aa.png images/result.txt`
 
 ## Демо
-[Слева: до, справа: после.](images/result_example.png)
+![Слева: до, справа: после.](images/result_example.png)
 
 _Автор — Пахтусова Екатерина, группа КН-203_

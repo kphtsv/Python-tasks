@@ -1,13 +1,12 @@
 import os
 import re
-from ascii_converter import image_processor
-from ascii_converter import file_processor
+from ascii_converter import image_processor, file_processor
 from sys import argv
 
 with open('help.txt', 'r', encoding='utf-8') as help_file:
     help_response = help_file.read()
 
-INPUT_PATTERN = re.compile(r'^-(?P<output_type>[it]) (?P<length>[0-9]+) (?P<input_dir>.+?) (?P<output_dir>.+)$')
+INPUT_PATTERN = re.compile(r'^-(?P<output_type>[itv]) -(?P<is_colored>[mc]) (?P<length>[0-9]+) (?P<input_dir>.+?) (?P<output_dir>.+)$')
 MAX_LENGTH = 300
 
 ANSWER_CODE_ANNOTATION = {
@@ -48,6 +47,7 @@ def run():
         print(help_response)
     else:
         output_type = match.group('output_type')
+        is_colored = True if match.group('is_colored') == 'c' else False
         art_len = int(match.group('length'))
         input_dir = match.group('input_dir')
         output_dir = match.group('output_dir')
@@ -56,13 +56,27 @@ def run():
             raise Exception('Length value is either too short or too long. Try again.')
 
         _, file_ext = os.path.splitext(input_dir)
-        if file_ext == '.jpg' or file_ext == '.png':
-            art = image_processor.to_ascii_art_from_file(input_dir, art_len, False)
-            if output_type == 't':
-                file_processor.write_txt(art, output_dir)
+        if file_ext == '.jpg' or file_ext == '.png' or file_ext == '.mp4':
+            if output_type == 'v':
+                saved_dir = file_processor.video_to_ascii(input_dir, art_len, is_colored)
+                print(f'Процесс преобразования завершен. Вы можете найти итоговый файл в \"{saved_dir}\".')
+                exit(0)
+
+            if is_colored:
+                if output_type == 'i':
+                    rgb_matrix = image_processor.to_ansi_art_from_file(input_dir, art_len)
+                    image = file_processor.write_color_art_to_image(rgb_matrix)
+                    file_processor.save_image(image, output_dir)
+                else:
+                    print('Запись цветного ASCII-изображения в текстовый файл невозможна.')
+                    print('Попробуйте запустить программу с ключом -i.')
             else:
-                image = file_processor.write_art_to_image(art)
-                file_processor.save_image(image, output_dir)
+                art = image_processor.to_ascii_art_from_file(input_dir, art_len, False)
+                if output_type == 't':
+                    file_processor.write_txt(art, output_dir)
+                elif output_type == 'i':
+                    image = file_processor.write_art_to_image(art)
+                    file_processor.save_image(image, output_dir)
         else:
             raise Exception('Unsupported input file extension. Try again with .png or .jpg image.')
 

@@ -1,4 +1,5 @@
 import math
+from ascii_converter import xterm_color
 
 
 # TODO: организовать в пакет
@@ -58,7 +59,7 @@ def rgb_to_brightness(r, g, b, grayscale=True):
 
 def rgb_to_ansi(r, g, b):
     """
-    Конвертирует r, g, b значения в ANSI-цвет.
+    Конвертирует r, g, b значения в ANSI-цвет.uh 766
     :param r: int - яркость красного
     :param g: int - яркость зеленого
     :param b: int - яркость синего
@@ -77,8 +78,9 @@ def rgb_to_ansi(r, g, b):
     r_in_range = to_ansi_range(r)
     g_in_range = to_ansi_range(g)
     b_in_range = to_ansi_range(b)
-    ansi = 16 + (36 * r_in_range) + (6 * g_in_range) + b_in_range
-    return int(ansi)
+    xterm_code = int(16 + (36 * r_in_range) + (6 * g_in_range) + b_in_range)  # код xterm-color цвета
+
+    return xterm_color.XTERM_CODE_TO_COLOR[xterm_code]
 
 
 # inverted = True => белый по черному, False => черный по белому

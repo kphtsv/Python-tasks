@@ -4,13 +4,12 @@ import os
 import cv2
 import ascii_converter.image_processor
 
-with open('ansi_chars.txt', 'r') as file:
-    ANSI_CHARACTERS = ['░', '▒', '▓', '█']
+ANSI_CHARACTERS = ['░', '▒', '▓', '█']
 
 
 def write_txt(art: str, output_directory: str):
     filename, ext = os.path.splitext(output_directory)
-    if ext != 'txt':
+    if ext != '.txt':
         raise Exception('Output filename has invalid extension. Should be \'.txt\'.')
 
     with open(output_directory, 'w', encoding='utf-8') as out_file:
@@ -42,27 +41,20 @@ def write_art_to_image(art: str):
     return image
 
 
-# def byte_format(b):  # 0 <= b <= 255
-#     b = hex(b)[hex(b).find('x') + 1:]
-#     if len(b) < 2:
-#         b = '0' + b
-#     return b
-
-
 def get_image_size_by_matrix(rgb_matrix, font):
     height = len(rgb_matrix)
     width = len(rgb_matrix[0])
-    #font.getsize('█')
+    # font.getsize('█')
     char_w, char_h = (16, 29)
     return width * char_w, height * char_h
 
 
 def write_color_art_to_image(rgb_matrix):
     font = ImageFont.truetype("C:\WINDOWS\Fonts\Arial.ttf", 25, encoding="utf-8")
-
     image = Image.new('RGB', get_image_size_by_matrix(rgb_matrix, font), color='#FFFFFF')
     draw_text = ImageDraw.Draw(image)
-    char_w, char_h = (16,29)
+    char_w, char_h = 16, 29
+
     for i in range(len(rgb_matrix)):
         row = rgb_matrix[i]
         for j in range(len(row)):
@@ -70,7 +62,7 @@ def write_color_art_to_image(rgb_matrix):
 
             draw_text.text(
                 (j * char_w, i * char_h),
-                '█',
+                ANSI_CHARACTERS[-1],
                 font=font,
                 fill=(r, g, b, 255)  # возможно, здесь BGRA
             )
@@ -118,16 +110,19 @@ def video_to_frames(video_full_filename: str):
     return frames
 
 
-def frames_to_ascii_frames(frames: iter, art_width: int):
+def frames_to_ascii_frames(frames: iter, art_width: int, is_colored=False):
     ascii_frames = []
     i = 0
     for frame_cv in frames:
         i += 1
         frame_pil = Image.fromarray(cv2.cvtColor(frame_cv, cv2.COLOR_BGR2RGB))  # cv2 -> PIL.Image
-        frame_art = ascii_converter.image_processor.image_to_ascii_art(frame_pil, art_width)
-        ascii_frame = pil_to_cv_image(write_art_to_image(frame_art))
+        if is_colored:
+            frame_rgb_matrix = ascii_converter.image_processor.image_to_ansi_art(frame_pil, art_width)
+            ascii_frame = pil_to_cv_image(write_color_art_to_image(frame_rgb_matrix))
+        else:
+            frame_art = ascii_converter.image_processor.image_to_ascii_art(frame_pil, art_width)
+            ascii_frame = pil_to_cv_image(write_art_to_image(frame_art))
         ascii_frames.append(ascii_frame)
-
     return ascii_frames
 
 
@@ -149,9 +144,9 @@ def frames_to_video(frames: iter, out_filename):
     return filename
 
 
-def video_to_ascii(full_video_filename: str, art_width: int):
+def video_to_ascii(full_video_filename: str, art_width: int, is_colored=False):
     frames = video_to_frames(full_video_filename)
-    ascii_frames = frames_to_ascii_frames(frames, art_width)
+    ascii_frames = frames_to_ascii_frames(frames, art_width, is_colored)
     name = os.path.splitext(os.path.basename(full_video_filename))[0]
     saved_dir = frames_to_video(ascii_frames, name)
 
