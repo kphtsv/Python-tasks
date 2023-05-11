@@ -1,9 +1,8 @@
 import math
-from ascii_converter import xterm_color
+from ascii_converter.ansi_color import ANSI_CODE_TO_COLOR
 
-
-# TODO: организовать в пакет
 # TODO: pylint , coverage > 80%
+
 
 def calc_cuts(str_length, width):
     """
@@ -57,19 +56,30 @@ def rgb_to_brightness(r, g, b, grayscale=True):
         return (0.267 * r + 0.642 * g + 0.091 * b) / 255
 
 
-def rgb_to_ansi(r, g, b):
+def rgb_to_ansi_color(r, g, b):
     """
     Конвертирует r, g, b значения в ANSI-цвет.uh 766
     :param r: int - яркость красного
     :param g: int - яркость зеленого
     :param b: int - яркость синего
-    :return: int - номер ANSI-цвета
+    :return: (int, int, int) - ANSI-цвет
     """
+    return ANSI_CODE_TO_COLOR[rgb_to_ansi_color_code(r, g, b)]
+
+
+def rgb_to_ansi_color_code(r, g, b):
+    """
+        Конвертирует r, g, b значения в код ANSI-цвета.
+        :param r: int - яркость красного
+        :param g: int - яркость зеленого
+        :param b: int - яркость синего
+        :return: int - номер ANSI-цвета
+        """
     if r == g & g == b:
         if r < 8:
-            return int(16)
+            return 16
         if r > 248:
-            return int(230)
+            return 230
         return int(round(((r - 8) / 247) * 24) + 232)
 
     def to_ansi_range(a):
@@ -80,7 +90,7 @@ def rgb_to_ansi(r, g, b):
     b_in_range = to_ansi_range(b)
     xterm_code = int(16 + (36 * r_in_range) + (6 * g_in_range) + b_in_range)  # код xterm-color цвета
 
-    return xterm_color.XTERM_CODE_TO_COLOR[xterm_code]
+    return xterm_code
 
 
 # inverted = True => белый по черному, False => черный по белому

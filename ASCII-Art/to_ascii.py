@@ -1,5 +1,7 @@
 import os
 import re
+
+import ascii_converter.color_console_handler
 from ascii_converter import image_processor, file_processor
 from sys import argv
 
@@ -7,7 +9,7 @@ with open('help.txt', 'r', encoding='utf-8') as help_file:
     help_response = help_file.read()
 
 INPUT_PATTERN = re.compile(r'^-(?P<output_type>[itv]) -(?P<is_colored>[mc]) (?P<length>[0-9]+) (?P<input_dir>.+?) (?P<output_dir>.+)$')
-MAX_LENGTH = 300
+MAX_LENGTH = 160
 
 ANSWER_CODE_ANNOTATION = {
     0: 'Некорректный ввод. Для вывода справки запустите скрипт с параметром -h или --help.',
@@ -52,8 +54,9 @@ def run():
         input_dir = match.group('input_dir')
         output_dir = match.group('output_dir')
 
+
         if art_len < 1 or MAX_LENGTH < art_len:
-            raise Exception('Length value is either too short or too long. Try again.')
+            raise Exception(f'Значение ширины арта либо слишком мало, либо слишком велико (больше {MAX_LENGTH}).')
 
         _, file_ext = os.path.splitext(input_dir)
         if file_ext == '.jpg' or file_ext == '.png' or file_ext == '.mp4':
@@ -63,13 +66,17 @@ def run():
                 exit(0)
 
             if is_colored:
-                if output_type == 'i':
-                    rgb_matrix = image_processor.to_ansi_art_from_file(input_dir, art_len)
-                    image = file_processor.write_color_art_to_image(rgb_matrix)
-                    file_processor.save_image(image, output_dir)
-                else:
+                if output_type == 't':
                     print('Запись цветного ASCII-изображения в текстовый файл невозможна.')
                     print('Попробуйте запустить программу с ключом -i.')
+                    exit(0)
+
+                rgb_matrix = image_processor.to_ansi_art_from_file(input_dir, art_len)
+                if output_type == 'i':
+                    image = file_processor.write_color_art_to_image(rgb_matrix)
+                    file_processor.save_image(image, output_dir)
+                # elif output_type == 'n':
+                #     ascii_converter.color_console_handler.print_colored(rgb_matrix)
             else:
                 art = image_processor.to_ascii_art_from_file(input_dir, art_len, False)
                 if output_type == 't':
@@ -77,8 +84,11 @@ def run():
                 elif output_type == 'i':
                     image = file_processor.write_art_to_image(art)
                     file_processor.save_image(image, output_dir)
+                # elif output_type == 'n':
+                #     print(art)
+                #     pass
         else:
-            raise Exception('Unsupported input file extension. Try again with .png or .jpg image.')
+            raise Exception('Неподдерживаемый формат входных данных. Попробуйте снова с расширениями .png, .jpg или.mp4.')
 
 
 if __name__ == '__main__':

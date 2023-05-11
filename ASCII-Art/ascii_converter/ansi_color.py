@@ -1,7 +1,7 @@
 # https://robotmoon.com/256-colors/
 
 
-XTERM_CODE_TO_COLOR = {
+ANSI_CODE_TO_COLOR = {
     0: (0, 0, 0),
     1: (128, 0, 0),
     2: (0, 128, 0),

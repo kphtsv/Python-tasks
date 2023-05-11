@@ -24,11 +24,23 @@ class ImageProcessorTest(unittest.TestCase):
         self.assertEqual(g_s, g_a)
         self.assertEqual(b_s, b_a)
 
-    def test_process(self):
+    def test_to_ascii_art(self):
         filename_in = '../images/small_image_bw.png'
         str_len = 4
 
         supposed_art = 'vv``\n++vv\nvvff\nccvv\nvvbb\n$$vv\n'
         actual_art = image_processor.to_ascii_art_from_file(filename_in, str_len, False)
         self.assertEqual(supposed_art, actual_art)
+
+    def test_to_ansi_art(self):
+        filename_in = '../images/small_image.png'
+        str_len = 2
+
+        supposed_rgb_matrix = [
+            [(255, 135, 135), (255, 215, 175)],
+            [(215, 215, 95), (135, 215, 135)],
+            [(0, 95, 175), (135, 95, 175)]
+        ]
+        actual_rgb_matrix = image_processor.to_ansi_art_from_file(filename_in, str_len)
+        self.assertEqual(supposed_rgb_matrix, actual_rgb_matrix)
 

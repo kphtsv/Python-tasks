@@ -106,7 +106,7 @@ def image_to_ansi_art(img: Image, str_length):
         for iv in range(1, len(vertical_cuts)):
             row = (prev_hc, horizontal_cuts[ih])
             column = (prev_vc, vertical_cuts[iv])
-            slice_color = calculator.rgb_to_ansi(*flatten_slice_color(row, column, rgb_img))
+            slice_color = calculator.rgb_to_ansi_color(*flatten_slice_color(row, column, rgb_img))
             rgb_row.append(slice_color)
             prev_vc = vertical_cuts[iv]
         rgb_matrix.append(rgb_row)
