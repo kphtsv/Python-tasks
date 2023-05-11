@@ -1,7 +1,6 @@
 import os
 import re
 
-import ascii_converter.color_console_handler
 from ascii_converter import image_processor, file_processor
 from sys import argv
 
