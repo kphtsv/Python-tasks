@@ -7,7 +7,8 @@ from sys import argv
 with open('help.txt', 'r', encoding='utf-8') as help_file:
     help_response = help_file.read()
 
-INPUT_PATTERN = re.compile(r'^-(?P<output_type>[itv]) -(?P<is_colored>[mc]) (?P<length>[0-9]+) (?P<input_dir>.+?) (?P<output_dir>.+)$')
+INPUT_PATTERN = re.compile(r'^-(?P<output_type>[itv]) -(?P<is_colored>[mc]) (?P<length>[0-9]+) (?P<input_dir>.+?) '
+                           r'(?P<output_dir>.+)$')
 MAX_LENGTH = 160
 
 ANSWER_CODE_ANNOTATION = {
@@ -53,7 +54,6 @@ def run():
         input_dir = match.group('input_dir')
         output_dir = match.group('output_dir')
 
-
         if art_len < 1 or MAX_LENGTH < art_len:
             raise Exception(f'Значение ширины арта либо слишком мало, либо слишком велико (больше {MAX_LENGTH}).')
 
@@ -74,8 +74,6 @@ def run():
                 if output_type == 'i':
                     image = file_processor.write_color_art_to_image(rgb_matrix)
                     file_processor.save_image(image, output_dir)
-                # elif output_type == 'n':
-                #     ascii_converter.color_console_handler.print_colored(rgb_matrix)
             else:
                 art = image_processor.to_ascii_art_from_file(input_dir, art_len, False)
                 if output_type == 't':
@@ -83,17 +81,13 @@ def run():
                 elif output_type == 'i':
                     image = file_processor.write_art_to_image(art)
                     file_processor.save_image(image, output_dir)
-                # elif output_type == 'n':
-                #     print(art)
-                #     pass
         else:
-            raise Exception('Неподдерживаемый формат входных данных. Попробуйте снова с расширениями .png, .jpg или.mp4.')
+            raise Exception(
+                'Неподдерживаемый формат входных данных. Попробуйте снова с расширениями .png, .jpg или.mp4.')
 
 
 if __name__ == '__main__':
     try:
         run()
-    except KeyboardInterrupt:  # не работает?
+    except KeyboardInterrupt:
         print('Shutting down.')
-
-    # test_file.run()

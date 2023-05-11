@@ -10,7 +10,8 @@ class ImageProcessorTest(unittest.TestCase):
         column = ((1, 0), (1, 0.5))
 
         supposed_brightness = 0.25 + 0.5 * 0.5 + 0.25 * 0.6
-        self.assertAlmostEqual(supposed_brightness, image_processor.flatten_slice_brightness(row, column, rgb_img), delta=1e-2)
+        self.assertAlmostEqual(supposed_brightness, image_processor.flatten_slice_brightness(row, column, rgb_img),
+                               delta=1e-2)
 
     def test_flatten_color(self):
         rgb_img = Image.open('../images/test.png').convert('RGB')
@@ -43,4 +44,3 @@ class ImageProcessorTest(unittest.TestCase):
         ]
         actual_rgb_matrix = image_processor.to_ansi_art_from_file(filename_in, str_len)
         self.assertEqual(supposed_rgb_matrix, actual_rgb_matrix)
-

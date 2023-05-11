@@ -8,6 +8,11 @@ ANSI_CHARACTERS = ['░', '▒', '▓', '█']
 
 
 def write_txt(art: str, output_directory: str):
+    """
+    Пишет заданный текст в файл по директории.
+    :param art: str - строка
+    :param output_directory: str - директория текстового файла вывода
+    """
     filename, ext = os.path.splitext(output_directory)
     if ext != '.txt':
         raise Exception('Output filename has invalid extension. Should be \'.txt\'.')
@@ -17,6 +22,12 @@ def write_txt(art: str, output_directory: str):
 
 
 def get_image_size_by_str(art: str, font):
+    """
+    Возвращает размер кадра с ASCII-артом.
+    :param art: str - ASCII-арт
+    :param font: шрифт библиотеки Pillow
+    :return: (int, int) - размер Pillow-изображения
+    """
     width = art.find('\n')
     height = int((len(art)) / (width + 1))
     char_w, char_h = font.getsize('W')
@@ -24,6 +35,11 @@ def get_image_size_by_str(art: str, font):
 
 
 def write_art_to_image(art: str):
+    """
+    Рисует заданный ASCII-Art на картинку.
+    :param art: str - ASCII-арт
+    :returns: PIL.Image - изображение с нанесённым артом
+    """
     font = ImageFont.load_default()
     image = Image.new('RGB', get_image_size_by_str(art, font), color='#FFFFFF')
 
@@ -41,17 +57,26 @@ def write_art_to_image(art: str):
     return image
 
 
-def get_image_size_by_matrix(rgb_matrix, font):
+def get_image_size_by_matrix(rgb_matrix):
+    """
+    Возвращает размер кадра с ANSI-артом.
+    :param rgb_matrix: list - RGB-матрица ANSI-арта
+    :return: (int, int) - размер Pillow-изображения
+    """
     height = len(rgb_matrix)
     width = len(rgb_matrix[0])
-    # font.getsize('█')
-    char_w, char_h = (16, 29)
+    char_w, char_h = (16, 29)  # font.getsize('█')
     return width * char_w, height * char_h
 
 
 def write_color_art_to_image(rgb_matrix):
-    font = ImageFont.truetype("C:\WINDOWS\Fonts\Arial.ttf", 25, encoding="utf-8")
-    image = Image.new('RGB', get_image_size_by_matrix(rgb_matrix, font), color='#FFFFFF')
+    """
+    Рисует заданный ANSI-Art на картинку.
+    :param rgb_matrix: list - RGB-матрица ANSI-арта
+    :returns: PIL.Image - изображение с нанесённым артом
+    """
+    font = ImageFont.truetype(r"C:\WINDOWS\Fonts\Arial.ttf", 25, encoding="utf-8")
+    image = Image.new('RGB', get_image_size_by_matrix(rgb_matrix), color='#FFFFFF')
     draw_text = ImageDraw.Draw(image)
     char_w, char_h = 16, 29
 
@@ -70,6 +95,11 @@ def write_color_art_to_image(rgb_matrix):
 
 
 def save_image(image: Image, output_directory: str):
+    """
+    Сохраняет Pillow-изображение по заданной директории.
+    :param image: PIL.Image - изображение для сохранения
+    :param output_directory: str - директория текстового файла вывода
+    """
     _, ext = os.path.splitext(output_directory)
     image.save(output_directory, format=ext[1:])
 
@@ -78,16 +108,31 @@ SAVING_FRAMES_PER_SECOND = 20
 
 
 def cv_to_pil_image(image):
+    """
+    Преобразует cv2-изображение в Pillow-изображение.
+    :param image: numpy.array - изображение для конвертации
+    :returns: PIL.Image - преобразованное изображение
+    """
     return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
 
 def pil_to_cv_image(image: Image):
+    """
+    Преобразует Pillow-изображение в cv2-изображение.
+    :param image: PIL.Image - изображение для конвертации
+    :returns: numpy.array - преобразованное изображение
+    """
     open_cv_image = numpy.array(image)
     open_cv_image = open_cv_image[:, :, ::-1].copy()  # Convert RGB to BGR
     return open_cv_image
 
 
 def video_to_frames(video_full_filename: str):
+    """
+    Извлекает кадры из видео.
+    :param video_full_filename: str - директория файла ввода
+    :returns: list - список PIL.Image-изображений
+    """
     capture = cv2.VideoCapture(video_full_filename)
     fps = capture.get(cv2.CAP_PROP_FPS)
     saving_fps = min(fps, SAVING_FRAMES_PER_SECOND)
@@ -111,6 +156,12 @@ def video_to_frames(video_full_filename: str):
 
 
 def frames_to_ascii_frames(frames: iter, art_width: int, is_colored=False):
+    """
+    Преобразует список кадров в ASCII-кадры.
+    :param frames: iter - список PIL.Image-кадров
+    :param art_width: int - ширина ASCII-изображения
+    :param is_colored: bool - монохром/цвет
+    """
     ascii_frames = []
     i = 0
     for frame_cv in frames:
@@ -127,6 +178,12 @@ def frames_to_ascii_frames(frames: iter, art_width: int, is_colored=False):
 
 
 def frames_to_video(frames: iter, out_filename):
+    """
+    Склеивает список кадров в видео и сохраняет.
+    :param frames: iter - список PIL.Image-кадров
+    :param out_filename: str - имя файла вывода
+    :return: str - директория сохранённого файла
+    """
     if len(frames) == 0:
         raise Exception('Nothing to convert!')
 
@@ -145,6 +202,13 @@ def frames_to_video(frames: iter, out_filename):
 
 
 def video_to_ascii(full_video_filename: str, art_width: int, is_colored=False):
+    """
+    Выполняет полное преобразование файла видео в файл ASCII- или ANSI-арта.
+    :param full_video_filename: str - полное имя видео файла ввода
+    :param art_width: int - ширина арта в символах
+    :param is_colored: bool - монохром/цвет
+    :return: str - директория сохранённого файла
+    """
     frames = video_to_frames(full_video_filename)
     ascii_frames = frames_to_ascii_frames(frames, art_width, is_colored)
     name = os.path.splitext(os.path.basename(full_video_filename))[0]

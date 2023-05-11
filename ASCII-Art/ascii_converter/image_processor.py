@@ -29,6 +29,13 @@ def flatten_slice_brightness(row, column, rgb_img):
 
 
 def flatten_slice_color(row, column, rgb_img):
+    """
+    Выравнивает цвет куска.
+    :param row: выделенная строка с гор. сечениями = (top, bottom); top, bottom в формате (pix_num, frac_part)
+    :param column: выделенный столбец с вер. сечениями = (left, right); left, right в формате (pix_num, frac_part)
+    :param rgb_img: изображение, конвертированное в RGB-сетку
+    :return: (int, int, int) - средний RGB-цвет заданного куска.
+    """
     left, right = column  # left, bottom, top, left грани в формате (pix_number, fraction)
     top, bottom = row
     width, height = rgb_img.size
@@ -87,11 +94,24 @@ def image_to_ascii_art(img: Image, str_length, inverted=False):
 
 
 def to_ascii_art_from_file(filename_in, str_length, inverted=False):
+    """
+    Возвращает ASCII-Art для изображения из файла.
+    :param filename_in: str - полное имя файла ввода.
+    :param str_length: int - ширина ASCII-арта.
+    :param inverted: bool - инверсия.
+    :return: str- ASCII-арт.
+    """
     img = Image.open(filename_in)
     return image_to_ascii_art(img, str_length, inverted)
 
 
 def image_to_ansi_art(img: Image, str_length):
+    """
+    Возвращает ANSI-Art для PIL.Image-изображения.
+    :param img: Image - картинка ввода в формате библиотеки Pillow
+    :param str_length: int - ширина ASCII-арта.
+    :return: list - RGB-матрица
+    """
     if str_length < 1:
         raise Exception("Incorrect string length input!")
 
@@ -116,5 +136,11 @@ def image_to_ansi_art(img: Image, str_length):
 
 
 def to_ansi_art_from_file(filename_in: str, str_length: int):
+    """
+    Возвращает ANSI-Art для изображения из файла.
+    :param filename_in: str - полное имя файла ввода.
+    :param str_length: int - ширина ANSI-арта.
+    :return: list - RGB-матрица
+    """
     img = Image.open(filename_in)
     return image_to_ansi_art(img, str_length)

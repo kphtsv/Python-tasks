@@ -24,9 +24,6 @@ class CalculatorTest(unittest.TestCase):
         test(24, (1272, 901))
         test(3, (2, 4))
 
-        # self.test_art_size(5, (0, 1))  # такого не может быть
-        # self.test_art_size(5, (1, 0))  # такого не может быть
-
     def test_rgb_to_brightness(self):
         def test(pixel, supposed_brightness):
             actual_brightness = calculator.rgb_to_brightness(*pixel)
@@ -35,8 +32,6 @@ class CalculatorTest(unittest.TestCase):
         rgb_img = Image.open('../images/small_image_bw.png').convert('RGB')
         test(rgb_img.getpixel((0, 0)), 0.5)
         test(rgb_img.getpixel((0, 5)), 0)
-
-    # нет теста на brightness_to_ascii
 
     def test_rgb_to_ansi_color(self):
         def test(pixel, supposed_color):
