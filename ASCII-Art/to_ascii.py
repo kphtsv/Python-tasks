@@ -1,40 +1,8 @@
 from ascii_converter import image_processor, file_processor
-from sys import argv
 import os
-import re
 import argparse
 
-# with open('help.txt', 'r', encoding='utf-8') as help_file:
-#     help_response = help_file.read()
-
-INPUT_PATTERN = re.compile(r'^-(?P<output_type>[itv]) -(?P<is_colored>[mc]) (?P<length>[0-9]+) (?P<input_dir>.+?) '
-                           r'(?P<output_dir>.+)$')
 MAX_LENGTH = 160
-
-ANSWER_CODE_ANNOTATION = {
-    0: 'Некорректный ввод. Для вывода справки запустите скрипт с параметром -h или --help.',
-    1: 'Инструкции не даны.\nЗапустите программу с параметром -h или --help для вызова справки.',
-    2: 'Вызов --help.',
-    3: 'Запрос корректен.'
-}
-
-
-def arg_parse():
-    """
-    Обработка аргументов ввода.
-    :return: (code: int, data: MatchObject) - код запроса, данные из запроса
-    """
-    if len(argv) == 1:
-        return 1, None
-    elif len(argv) == 2 and (argv[1] == '-h' or argv[1] == '--help'):
-        return 2, None
-    else:
-        cli_input = ' '.join(argv[1:]).strip()
-        match = INPUT_PATTERN.search(cli_input)
-        if match:
-            return 3, match
-        else:
-            return 0, None
 
 
 def parse_params():
