@@ -6,6 +6,10 @@ MAX_LENGTH = 160
 
 
 def parse_params():
+    """
+    Парсит аргументы из консоли.
+    :returns: object - объект с аргументами как свойствами
+    """
     parser = argparse.ArgumentParser(
         prog='ASCII-конвертер',
         description='Преобразует картинки и видео в ASCII- или ANSI-арт.',
